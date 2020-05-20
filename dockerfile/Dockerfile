@@ -1,5 +1,9 @@
 FROM node:12-stretch
 
+# commands
+# START -t sometagname END
+# START -t sometagname:123 END
+
 # -e = immediately execute next string of code
 # the above container already has a default command, but this overrides it
 # this cmd can also be overridden with additional args passed into docker run, like ls
