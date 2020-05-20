@@ -7,12 +7,13 @@ RUN mkdir /home/node/code
 
 WORKDIR /home/node/code
 
-# . . (instead of specific files like last time)
+# docker caches all steps. copy over cached (if already run) package files and run ci before copying over rest
+# so that changing a port or something won't cause npm ci to run needlessly again
+COPY --chown=node:node package-lock.json package.json ./
+RUN npm ci
+
 # means copy everything from here to there - there being workdir -- inside the container
 COPY --chown=node:node . .
 
-# npm ci installs based off of lock file instead of package.json
-RUN npm ci
-# but this gives a permissions error, because . is owned by root user, not node
 
 CMD ["node", "index.js"]
