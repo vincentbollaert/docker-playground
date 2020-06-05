@@ -1,0 +1,19 @@
+version: "3"
+services:
+  web:
+    build: .
+    ports:
+      - "3000:3000"
+    volumes:
+      - .:/home/node/code
+      - /home/node/code/node_modules
+    links:
+      - db
+    environment:
+      MONGO_CONNECTION_STRING: mongodb://db:27017
+  db:
+    image: mongo:3
+
+# this is much simpler than doing it manually as before -- see dockerfile
+# where you'd set up networking and pass a bunch of commands into run
+# just share this file, run docker-compose up, and you're good
