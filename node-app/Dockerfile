@@ -1,11 +1,11 @@
 FROM node:14.5
 
 USER node
+ENV home=/home/node/app
 
-RUN mkdir /home/node/app
-WORKDIR /home/node/app
+RUN mkdir $home
+WORKDIR $home
 
-# * - copy only if it exists
 COPY --chown=node:node package.json package-lock.json* ./
 RUN npm ci
 
