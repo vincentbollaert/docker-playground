@@ -1,19 +1,12 @@
-FROM node:12-stretch
+FROM node:14.5
 
 USER node
 
-# creating this as node user gives it permissions. otherwise it is owned by root
-RUN mkdir /home/node/code
+RUN mkdir /home/node/app
+WORKDIR /home/node/app
 
-WORKDIR /home/node/code
-
-# docker caches all steps. copy over cached (if already run) package files and run ci before copying over rest
-# so that changing a port or something won't cause npm ci to run needlessly again
-COPY --chown=node:node package-lock.json package.json ./
+COPY --chown=node:node package.json package-lock.json ./
 RUN npm ci
 
-# means copy everything from here to there - there being workdir -- inside the container
 COPY --chown=node:node . .
-
-
-CMD ["node", "index.js"]
+RUN ["node", "index.js"]

@@ -1,4 +1,4 @@
-FROM node:12-stretch
+FROM node:14.5
 
 # commands
 # whoami
@@ -8,7 +8,7 @@ USER node
 
 # the home dir of the node user, under w/e folder. let's say code
 # can test this by appending whoami to run
-WORKDIR /home/node/code
+WORKDIR /home/node/app
 
 COPY --chown=node:node index.js index.js
 
