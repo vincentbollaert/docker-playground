@@ -1,0 +1,17 @@
+version: '2.4'
+
+services:
+  web:
+    init: true
+    build: 
+      context: .
+      target: dev
+      # find the dockerfile in this dir at stage called 'dev'
+    ports:
+      - "3000:3000"
+    volumes:
+      - .:/opt/app:delegated
+      - /opt/app/node_modules
+      # TODO: look into volumes more
+      # TODO: what is delegated again?
+

@@ -1,0 +1,97 @@
+version: '2.4'
+
+services:
+  redis:
+    image: redis:alpine
+    networks:
+      - frontend
+    healthcheck:
+      test: redis-cli ping
+
+  db:
+    image: postgres:9.6
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_HOST_AUTH_METHOD=trust
+    networks:
+      - backend
+    healthcheck:
+      test: pg_isready -U postgres -h 127.0.0.1
+
+  vote:
+    image: bretfisher/examplevotingapp_vote
+    ports:
+      - '5000:80'
+    networks:
+      - frontend
+    depends_on:
+      redis:
+        condition: service_healthy
+    # traefik proxy for port 80 on host.localhost
+    labels:
+      - traefik.port=80
+      - traefik.frontend.rule=Host:vote.localhost
+
+  result:
+    # can just be nodemon as it is installed globally
+    # inspect is just for debugging
+    command: nodemon --inspect=0.0.0.0:9229 server.js
+    build: 
+      context: result
+    ports:
+      - '5001:80'
+      - '9229:9229'
+    networks:
+      - backend
+    volumes:
+      - ./result:/app
+    environment:
+      - NODE_ENV=development
+    depends_on:
+      db:
+        condition: service_healthy
+    # traefik proxy for port 80 on result.localhost
+    labels:
+      - traefik.port=80
+      - traefik.frontend.rule=Host:result.localhost
+
+  worker:
+    image: bretfisher/examplevotingapp_worker:java
+    networks:
+      - frontend
+      - backend
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  proxy:
+    image: traefik:1.7-alpine
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    ports:
+      - "80:80"
+    command:
+      - --docker
+      - --docker.domain=traefik
+      - --docker.watch
+      - --api
+      - --defaultentrypoints=http,https
+    labels:
+      - traefik.port=8080
+      - traefik.frontend.rule=Host:traefik.localhost
+    # because we have custom networks setup below, need to add proxy to them to access the apps
+    networks:
+      - backend
+      - frontend
+
+
+networks:
+    frontend:
+    backend:
+
+volumes:
+    db-data:
+
